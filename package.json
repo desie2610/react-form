@@ -2,7 +2,7 @@
   "name": "react-form",
   "private": true,
   "version": "0.0.0",
-  "type": "module",
+"homepage": "https://github.com/desie2610/react-form",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
