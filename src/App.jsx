@@ -10,46 +10,73 @@ class App extends Component {
     number: '',
   };
 
+  // 🔹 загрузка из localStorage при старте
+  componentDidMount() {
+    const saved = localStorage.getItem('contacts');
+
+    if (saved) {
+      this.setState({
+        contacts: JSON.parse(saved),
+      });
+    }
+  }
+
+  // 🔹 сохранение в localStorage при изменении contacts
+  componentDidUpdate(prevProps, prevState) {
+    if (prevState.contacts !== this.state.contacts) {
+      localStorage.setItem(
+        'contacts',
+        JSON.stringify(this.state.contacts)
+      );
+    }
+  }
+
   handleChange = (event) => {
     this.setState({
       [event.target.name]: event.target.value,
     });
   };
 
-  addContact = e => {
+  addContact = (e) => {
     e.preventDefault();
 
-    for (let contact of this.state.contacts) {
-      if (contact.name.toLowerCase() === this.state.name.toLowerCase()) {
-        alert('Контакт уже существует');
-        return;
-      }
+    const { contacts, name, number } = this.state;
+
+    const exists = contacts.some(
+      contact => contact.name.toLowerCase() === name.toLowerCase()
+    );
+
+    if (exists) {
+      alert('Контакт уже существует');
+      return;
     }
 
     const newContact = {
       id: nanoid(),
-      name: this.state.name,
-      number: this.state.number,
+      name,
+      number,
     };
 
     this.setState({
-      contacts: [...this.state.contacts, newContact],
+      contacts: [...contacts, newContact],
       name: '',
       number: '',
     });
   };
 
-  deleteContact = id => {
+  deleteContact = (id) => {
     this.setState({
-      contacts: this.state.contacts.filter(contact => contact.id !== id),
+      contacts: this.state.contacts.filter(
+        contact => contact.id !== id
+      ),
     });
   };
 
   render() {
-    const contacts = this.state.contacts.filter(contact =>
-      contact.name
-        .toLowerCase()
-        .includes(this.state.filter.toLowerCase())
+    const { contacts, filter, name, number } = this.state;
+
+    const filteredContacts = contacts.filter(contact =>
+      contact.name.toLowerCase().includes(filter.toLowerCase())
     );
 
     return (
@@ -62,9 +89,8 @@ class App extends Component {
             <input
               type="text"
               name="name"
-              value={this.state.name}
+              value={name}
               onChange={this.handleChange}
-              pattern="^[a-zA-Zа-яА-Я]+(([' -][a-zA-Zа-яА-Я ])?[a-zA-Zа-яА-Я]*)*$"
               required
             />
           </label>
@@ -76,9 +102,8 @@ class App extends Component {
             <input
               type="tel"
               name="number"
-              value={this.state.number}
+              value={number}
               onChange={this.handleChange}
-              pattern="\+?\d{1,4}?[-.\s]?\(?\d{1,3}?\)?[-.\s]?\d{1,4}[-.\s]?\d{1,4}[-.\s]?\d{1,9}"
               required
             />
           </label>
@@ -87,18 +112,19 @@ class App extends Component {
 
           <button type="submit">Add contact</button>
         </form>
-          <h2>Contacts</h2>
+
+        <h2>Contacts</h2>
 
         <input
           type="text"
           placeholder="Search contact"
           name="filter"
-          value={this.state.filter}
+          value={filter}
           onChange={this.handleChange}
         />
 
         <ul>
-          {contacts.map(contact => (
+          {filteredContacts.map(contact => (
             <li key={contact.id}>
               {contact.name} - {contact.number}
               <button onClick={() => this.deleteContact(contact.id)}>
